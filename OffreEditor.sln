@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35913.81 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OffreEditor", "OffreEditor\OffreEditor.csproj", "{DE929112-0316-4385-AF8B-7F2A7DFD685F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE929112-0316-4385-AF8B-7F2A7DFD685F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE929112-0316-4385-AF8B-7F2A7DFD685F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE929112-0316-4385-AF8B-7F2A7DFD685F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE929112-0316-4385-AF8B-7F2A7DFD685F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D469C57B-EC19-4930-B179-6CA0A9B992E4}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,187 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using System.Text
+@using OffreEditor.Models
+@inject IJSRuntime JS
+
+<h3 class="text-xl font-bold mb-4">Nouvelle Offre</h3>
+
+<!-- Category Selector -->
+<select class="border p-2 mb-4 rounded shadow" @bind="SelectedCategory">
+    <option disabled selected value>-- Sélectionner une catégorie --</option>
+    @foreach (var cat in Categories)
+    {
+        <option value="@cat">@cat</option>
+    }
+</select>
+
+<!-- Grouped Product Tables -->
+<div id="pdfContent" style="background-color: #f9fafb; padding: 2rem;">
+    @foreach (var group in ProductList.GroupBy(p => p.Category))
+    {
+        <h3 class="category-header" style="margin-top: 2rem; padding: 0.75rem 1rem; background: linear-gradient(to right, #3b82f6, #60a5fa); color: white; font-size: 1.2rem; border-left: 6px solid #2563eb; border-radius: 0.375rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+            <i class="fa-solid @GetCategoryIcon(group.Key)" style="font-size: 1.2rem; color: white;"></i>
+            @group.Key
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 1rem; box-shadow: 0 0 5px rgba(0,0,0,0.05);">
+            <thead>
+                <tr style="background-color: #1e40af; color: white;">
+                    <th style="border: 1px solid #ddd; padding: 10px 14px; text-align: left;">Article</th>
+                    <th style="border: 1px solid #ddd; padding: 10px 14px; text-align: left;">Qté</th>
+                    <th style="border: 1px solid #ddd; padding: 10px 14px; text-align: left;">Description</th>
+                    <th style="border: 1px solid #ddd; padding: 10px 14px; text-align: left;">Détail</th>
+                    <th style="border: 1px solid #ddd; padding: 10px 14px; text-align: left;">Pays</th>
+                    <th style="border: 1px solid #ddd; padding: 10px 14px; text-align: left;">Poids</th>
+                    <th style="border: 1px solid #ddd; padding: 10px 14px; text-align: left;">Unité</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in group)
+                {
+                    <tr style="background-color:@((ProductList.IndexOf(row) % 2 == 0) ? "#ffffff" : "#f1f5f9")">
+                        <td style="border: 1px solid #ddd; padding: 8px 12px;"><input @bind="row.Article" class="w-full p-1 border rounded" /></td>
+                        <td style="border: 1px solid #ddd; padding: 8px 12px;"><input @bind="row.Qté" class="w-full p-1 border rounded" /></td>
+                        <td style="border: 1px solid #ddd; padding: 8px 12px;"><input @bind="row.Description" class="w-full p-1 border rounded" /></td>
+                        <td style="border: 1px solid #ddd; padding: 8px 12px;"><input @bind="row.Détail" class="w-full p-1 border rounded" /></td>
+                        <td style="border: 1px solid #ddd; padding: 8px 12px;"><input @bind="row.Pays" class="w-full p-1 border rounded" /></td>
+                        <td style="border: 1px solid #ddd; padding: 8px 12px;"><input @bind="row.Poids" class="w-full p-1 border rounded" /></td>
+                        <td style="border: 1px solid #ddd; padding: 8px 12px;"><input @bind="row.Unité" class="w-full p-1 border rounded" /></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<!-- Action Buttons -->
+<div class="mt-4 d-flex flex-wrap gap-2">
+    <button class="btn btn-primary d-flex align-items-center gap-2" style="padding: 0.5rem 1rem;" @onclick="AddRow">
+        <i class="fa-solid fa-plus me-2"></i>
+        Ajouter une ligne
+    </button>
+
+    <button class="btn btn-success d-flex align-items-center gap-2" style="padding: 0.5rem 1rem;" @onclick="ExportHtml">
+        <i class="fa-solid fa-code me-2"></i>
+        Voir HTML
+    </button>
+
+    <button class="btn btn-danger d-flex align-items-center gap-2" style="padding: 0.5rem 1rem;" @onclick="ExportToPdf">
+        <i class="fa-solid fa-file-pdf me-2"></i>
+        Exporter en PDF
+    </button>
+</div>
+
+
+
+@if (!string.IsNullOrWhiteSpace(ExportedHtml))
+{
+    <div class="mt-6">
+        <h4 class="font-bold mb-2">HTML Export</h4>
+        <textarea class="w-full h-64 p-2 border shadow-sm" readonly>@ExportedHtml</textarea>
+    </div>
+}
+
+@code {
+    private List<ProductEntry> ProductList { get; set; } = new( );
+    private string ExportedHtml = "";
+    private string SelectedCategory;
+
+    private List<string> Categories = new( )
+    {
+        "LÉGUMES", "POMMES DE TERRE", "TOMATES", "LÉGUMES ETHNIQUES", "SALADES",
+        "4ÈME GAMME", "HERBES", "FRUITS", "POMMES ET POIRES", "FRUITS EXOTIQUES", "MOZZARELLA"
+    };
+
+    private void AddRow()
+    {
+        if (!string.IsNullOrWhiteSpace(SelectedCategory))
+        {
+            ProductList.Add(new ProductEntry { Category = SelectedCategory });
+        }
+    }
+
+    private void ExportHtml()
+    {
+        var sb = new StringBuilder( );
+
+        sb.AppendLine("<div style='background-color: #f9fafb; padding: 2rem;'>");
+
+        foreach (var group in ProductList.GroupBy(p => p.Category))
+        {
+            sb.AppendLine($"<h3 style='margin-top: 2rem; padding: 0.75rem 1rem; background: linear-gradient(to right, #3b82f6, #60a5fa); color: white; font-size: 1.2rem; border-left: 6px solid #2563eb; border-radius: 0.375rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'>");
+            sb.AppendLine($"<i class='fa-solid {GetCategoryIcon(group.Key)}' style='font-size: 1.2rem; color: white;'></i> {group.Key}</h3>");
+
+            sb.AppendLine("<table style='width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 1rem; box-shadow: 0 0 5px rgba(0,0,0,0.05);'>");
+            sb.AppendLine("<thead><tr style='background-color: #1e40af; color: white;'>");
+            sb.AppendLine("<th style='border: 1px solid #ddd; padding: 10px 14px;'>Article</th>");
+            sb.AppendLine("<th style='border: 1px solid #ddd; padding: 10px 14px;'>Qté</th>");
+            sb.AppendLine("<th style='border: 1px solid #ddd; padding: 10px 14px;'>Description</th>");
+            sb.AppendLine("<th style='border: 1px solid #ddd; padding: 10px 14px;'>Détail</th>");
+            sb.AppendLine("<th style='border: 1px solid #ddd; padding: 10px 14px;'>Pays</th>");
+            sb.AppendLine("<th style='border: 1px solid #ddd; padding: 10px 14px;'>Poids</th>");
+            sb.AppendLine("<th style='border: 1px solid #ddd; padding: 10px 14px;'>Unité</th>");
+            sb.AppendLine("</tr></thead><tbody>");
+
+            foreach (var row in group)
+            {
+                sb.AppendLine("<tr style='background-color: #ffffff;'>");
+                sb.AppendLine($"<td style='border: 1px solid #ddd; padding: 8px 12px;'>{row.Article}</td>");
+                sb.AppendLine($"<td style='border: 1px solid #ddd; padding: 8px 12px;'>{row.Qté}</td>");
+                sb.AppendLine($"<td style='border: 1px solid #ddd; padding: 8px 12px;'>{row.Description}</td>");
+                sb.AppendLine($"<td style='border: 1px solid #ddd; padding: 8px 12px;'>{row.Détail}</td>");
+                sb.AppendLine($"<td style='border: 1px solid #ddd; padding: 8px 12px;'>{row.Pays}</td>");
+                sb.AppendLine($"<td style='border: 1px solid #ddd; padding: 8px 12px;'>{row.Poids}</td>");
+                sb.AppendLine($"<td style='border: 1px solid #ddd; padding: 8px 12px;'>{row.Unité}</td>");
+                sb.AppendLine("</tr>");
+            }
+
+            sb.AppendLine("</tbody></table>");
+        }
+
+        sb.AppendLine("</div>");
+        ExportedHtml = sb.ToString( );
+    }
+
+
+    private async Task ExportToPdf()
+    {
+        await JS.InvokeVoidAsync("exportHtmlToPdf","pdfContent","Offre.pdf");
+    }
+
+    private string GetCategoryIcon(string category) => category switch
+    {
+        "LÉGUMES" => "fa-carrot",
+        "POMMES DE TERRE" => "fa-apple-alt",
+        "TOMATES" => "fa-apple-whole",
+        "LÉGUMES ETHNIQUES" => "fa-leaf",
+        "SALADES" => "fa-seedling",
+        "4ÈME GAMME" => "fa-box",
+        "HERBES" => "fa-seedling",
+        "FRUITS" => "fa-lemon",
+        "POMMES ET POIRES" => "fa-apple-whole",
+        "FRUITS EXOTIQUES" => "fa-lemon",
+        "MOZZARELLA" => "fa-cheese",
+        _ => "fa-tags"
+    };
+}
+
+<script>
+    window.exportHtmlToPdf = async function (elementId, fileName) {
+        const element = document.getElementById(elementId);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF("p", "pt", "a4");
+
+        await html2canvas(element, {
+            scale: 2,
+            useCORS: true
+        }).then(canvas => {
+            const imgData = canvas.toDataURL("image/png");
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(fileName || "Offre.pdf");
+        });
+    };
+</script>
