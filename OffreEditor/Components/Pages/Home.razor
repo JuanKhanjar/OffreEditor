@@ -71,7 +71,13 @@
     </button>
 </div>
 
-
+@if (!string.IsNullOrWhiteSpace(NotificationMessage))
+{
+    <div class="alert alert-warning mt-3">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>
+        @NotificationMessage
+    </div>
+}
 
 @if (!string.IsNullOrWhiteSpace(ExportedHtml))
 {
@@ -85,6 +91,7 @@
     private List<ProductEntry> ProductList { get; set; } = new( );
     private string ExportedHtml = "";
     private string SelectedCategory;
+    private string NotificationMessage = "";
 
     private List<string> Categories = new( )
     {
@@ -96,7 +103,18 @@
     {
         if (!string.IsNullOrWhiteSpace(SelectedCategory))
         {
-            ProductList.Add(new ProductEntry { Category = SelectedCategory });
+            bool alreadyExists = ProductList.Any(p => p.Category == SelectedCategory);
+
+            if (alreadyExists)
+            {
+                ProductList.Add(new ProductEntry { Category = SelectedCategory });
+                NotificationMessage = $"❗ La catégorie \"{SelectedCategory}\" est déjà ajoutée.";
+            }
+            else
+            {
+                ProductList.Add(new ProductEntry { Category = SelectedCategory });
+                NotificationMessage = "";
+            }
         }
     }
 
@@ -108,8 +126,7 @@
 
         foreach (var group in ProductList.GroupBy(p => p.Category))
         {
-            sb.AppendLine($"<h3 style='margin-top: 2rem; padding: 0.75rem 1rem; background: linear-gradient(to right, #3b82f6, #60a5fa); color: white; font-size: 1.2rem; border-left: 6px solid #2563eb; border-radius: 0.375rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'>");
-            sb.AppendLine($"<i class='fa-solid {GetCategoryIcon(group.Key)}' style='font-size: 1.2rem; color: white;'></i> {group.Key}</h3>");
+            sb.AppendLine($"<h3 style='margin-top: 2rem; padding: 0.75rem 1rem; background: linear-gradient(to right, #3b82f6, #60a5fa); color: white; font-size: 1.2rem; border-left: 6px solid #2563eb; border-radius: 0.375rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'><i class='fa-solid {GetCategoryIcon(group.Key)}' style='font-size: 1.2rem; color: white;'></i> {group.Key}</h3>");
 
             sb.AppendLine("<table style='width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 1rem; box-shadow: 0 0 5px rgba(0,0,0,0.05);'>");
             sb.AppendLine("<thead><tr style='background-color: #1e40af; color: white;'>");
@@ -141,7 +158,6 @@
         sb.AppendLine("</div>");
         ExportedHtml = sb.ToString( );
     }
-
 
     private async Task ExportToPdf()
     {
