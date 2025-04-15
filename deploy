@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: offre-editor
-    env: docker
-    branch: deploy
-    plan: free
-    dockerfilePath: Dockerfile
